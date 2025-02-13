@@ -1,0 +1,47 @@
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+
+# Ignore node modules (if using Node.js)
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Ignore Python files (if using Python)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv
+
+# Ignore logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Ignore build and dependency files
+dist/
+build/
+*.out
+*.o
+*.so
+*.a
+*.dll
+*.exe
+
+# Ignore IDE and editor config files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Ignore environment files
+.env
+.env.local
+
+# Ignore Git metadata for subdirectories
+**/.git

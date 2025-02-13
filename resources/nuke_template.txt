@@ -1,0 +1,39 @@
+# Nuke script generated via Python
+version 15.0 v5
+
+Root {{
+    first_frame {first}
+    last_frame {last}
+    colorManagement "OCIO"
+    OCIO_config "{OCIO_PATH}"
+}}
+
+Read {{
+    file "{read_file_path}"
+    first {first}
+    last {last}
+    name read
+    xpos 100
+    ypos 100
+}}
+
+Reformat {{
+    format "1920 1080"
+    black_outside true
+    name Reformat1
+    selected true
+    xpos 100
+    ypos 200
+}}
+
+Write {{
+    file "{output_file_path}"
+    file_type mov
+    mov64_codec appr
+    mov_prores_codec_profile "ProRes 4:2:2 Proxy 10-bit"
+    colorspace shot_lut
+    mov64_fps 23.976
+    name write_mov
+    xpos 100
+    ypos 300
+}}
