@@ -1,6 +1,5 @@
 import os
 import re
-from webbrowser import Error
 
 import nuke
 import sgtk
@@ -54,7 +53,6 @@ class SubmitterPanel(nukescripts.PythonPanel):
         """Configure knob properties."""
         self.render_review.setFlag(nuke.STARTLINE)
         self.add_slate.setFlag(nuke.DISABLED)
-        self.add_burn.setFlag(nuke.DISABLED)
 
     def _add_knobs(self):
         """Add knobs to the panel."""
@@ -70,7 +68,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
     # Get Methods
     # ----------------------------------------
 
-    def _get_shotgrid_context(self):
+    @staticmethod
+    def _get_shotgrid_context():
         """
         Retrieves the current ShotGrid Toolkit context and toolkit instance.
 
@@ -80,7 +79,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
         engine = sgtk.platform.current_engine()
         return engine.context, engine.sgtk
 
-    def _get_deadline_command(self):
+    @staticmethod
+    def _get_deadline_command():
         """
         Retrieves the Deadline command path from environment variables or a fallback file.
 
@@ -97,7 +97,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
 
         return os.path.join(deadline_path, "deadlinecommand")
 
-    def _get_ocio_path(self):
+    @staticmethod
+    def _get_ocio_path():
         """
         Retrieves the OCIO environment variable and processes it for Windows and non-Windows systems.
 
@@ -112,7 +113,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
             return ocio_path.replace("/Volumes/production/", "P:/").replace("\\", "/")
         return ocio_path
 
-    def _get_nuke_script_path(self):
+    @staticmethod
+    def _get_nuke_script_path():
         """
         Retrieves the current Nuke script path and ensures it is saved.
 
@@ -200,6 +202,12 @@ class SubmitterPanel(nukescripts.PythonPanel):
             submission_files.append(self._build_submission_files("mov", node, script_path=script_path))
 
         return submission_files
+
+    @staticmethod
+    def _get_resources_dir():
+        """Returns the absolute path to the 'resources' directory."""
+        return os.path.join(pathlib.Path(__file__).resolve().parent.parent, "resources")
+
 
     # ----------------------------------------
     # Build Methods
@@ -294,14 +302,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
         else:
             output_file_path = "/tmp/output.exr"  # Default location if no Read file is provided
 
-        # Get the absolute path to the current script
-        script_dir = pathlib.Path(__file__).resolve().parent
-
-        # Construct the path to the template file
-        template_path = script_dir.parent / "resources" / "nuke_template.txt"
-
         # Generate Nuke script content
-        nuke_script_content = self._write_script_content(read_file_path, output_file_path, template_path)
+        nuke_script_content = self._write_script_content(read_file_path, output_file_path, self._get_resources_dir())
 
         # Write the script to disk
         with open(new_script_path, "w") as script_file:
@@ -309,7 +311,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
 
         return new_script_path
 
-    def _build_submission_command(self, command, submission_files):
+    @staticmethod
+    def _build_submission_command(command, submission_files):
         """Adds job info and plugin info for each submission file."""
         for job_info, plugin_info in submission_files:
             command.extend(["-job", job_info, plugin_info])
@@ -336,7 +339,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
                 f"EnvironmentKeyValue0=OCIO={self._get_ocio_path()}\n",
             ])
 
-    def _write_plugin_info(self, plugin_info_path, script_path):
+    @staticmethod
+    def _write_plugin_info(plugin_info_path, script_path):
         """Writes the plugin info file for Deadline submission."""
         with open(plugin_info_path, "w") as plugin_file:
             plugin_file.writelines([
@@ -344,14 +348,14 @@ class SubmitterPanel(nukescripts.PythonPanel):
                 f"Version={nuke.NUKE_VERSION_MAJOR}.{nuke.NUKE_VERSION_MINOR}\n",
             ])
 
-    def _write_script_content(self, read_file_path, output_file_path, template):
+    def _write_script_content(self, read_file_path, output_file_path, resources_dir):
         """
         Reads a Nuke script template from a file and populates it with dynamic values.
 
         Args:
             read_file_path (str): Path to the input file for the Read node.
             output_file_path (str): Path for the output file in the Write node.
-            contents (str): Path to the text file containing the Nuke script template.
+            resources_dir (Path): Path to the text file containing the Nuke script template.
 
         Returns:
             str: The populated Nuke script content.
@@ -364,8 +368,30 @@ class SubmitterPanel(nukescripts.PythonPanel):
             # Get OCIO path
             ocio_path = self._get_ocio_path()
 
+            # Define paths
+            burn_path = os.path.join(resources_dir, "burn.nk")
+            template_path = os.path.join(resources_dir, "nuke_template.txt")
+
+            if self.add_burn.value():
+
+                # Read burn file and skip the first two lines
+                with open(burn_path, "r") as file:
+                    lines = file.readlines()
+
+                # Find the first occurrence of the target string
+                for i, line in enumerate(lines):
+                    if "push $cut_paste_input" in line:
+                        filtered_lines = lines[i+1:]  # Keep everything after this line
+                        break
+
+                burn_content = "".join(filtered_lines)  # Join list into a string
+
+            else:
+                
+                burn_content = ""
+
             # Read template file
-            with open(template, "r") as file:
+            with open(template_path, "r") as file:
                 nuke_script_template = file.read()
 
             # Populate template with values
@@ -374,7 +400,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
                 last=last,
                 OCIO_PATH=ocio_path,
                 read_file_path=read_file_path,
-                output_file_path=output_file_path
+                output_file_path=output_file_path,
+                burn_in_file=burn_content.strip()  # Remove leading/trailing newlines
             )
 
             return nuke_script_content
@@ -387,7 +414,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
     # Utility Methods
     # ----------------------------------------
 
-    def _convert_write_nodes(self, nodes, direction):
+    @staticmethod
+    def _convert_write_nodes(nodes, direction):
         """
         Converts selected nodes between 'Write' and 'WriteTank' classes.
 
@@ -433,7 +461,28 @@ class SubmitterPanel(nukescripts.PythonPanel):
                 updated_nodes.append(converted_node)
 
         return updated_nodes  # Return the updated list
-        
+
+    @staticmethod
+    def _deselect_and_disable_write_nodes(write_nodes):
+        """Deselects and disables all write nodes in the list."""
+        for node in write_nodes:
+            node.setSelected(False)
+            node['disable'].setValue(True)
+
+    @staticmethod
+    def _select_and_enable_write_node(write_node):
+        """Selects and enables a single write node for rendering."""
+        write_node.setSelected(True)
+        write_node['disable'].setValue(False)
+
+    @staticmethod
+    def _deselect_non_write_nodes():
+        """Deselects all nodes that are not of the 'Write' class."""
+        all_nodes = nuke.allNodes()
+        for node in all_nodes:
+            if node.Class() != "Write":
+                node.setSelected(False)  # Deselect non-Write nodes
+
     # ----------------------------------------
     # Execute Methods
     # ----------------------------------------
@@ -452,7 +501,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
         result = subprocess.run(command, capture_output=True, text=True)
         self._handle_submission_result(result)
 
-    def _handle_submission_result(self, result):
+    @staticmethod
+    def _handle_submission_result(result):
         """Handles the submission result and shows appropriate message."""
         if result.returncode != 0:
             nuke.message(f"Failed to submit to Deadline!\n{result.stderr}")
@@ -460,7 +510,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
             nuke.message(f"Successfully submitted to Deadline!\n{result.stdout}")
 
     # ----------------------------------------
-    # Static Methods
+    # Exposed Methods
     # ----------------------------------------
 
     @staticmethod
@@ -497,25 +547,5 @@ class SubmitterPanel(nukescripts.PythonPanel):
             # Notify the user that no valid Write nodes were found
             nuke.message("No valid Write nodes selected. Please select at least one Write or WriteTank node.")
 
-    @staticmethod
-    def _deselect_and_disable_write_nodes(write_nodes):
-        """Deselects and disables all write nodes in the list."""
-        for node in write_nodes:
-            node.setSelected(False)
-            node['disable'].setValue(True)
-
-    @staticmethod
-    def _select_and_enable_write_node(write_node):
-        """Selects and enables a single write node for rendering."""
-        write_node.setSelected(True)
-        write_node['disable'].setValue(False)
-
-    @staticmethod
-    def _deselect_non_write_nodes():
-        """Deselects all nodes that are not of the 'Write' class."""
-        all_nodes = nuke.allNodes()
-        for node in all_nodes:
-            if node.Class() != "Write":
-                node.setSelected(False)  # Deselect non-Write nodes
 
 

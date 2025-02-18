@@ -17,6 +17,8 @@ Read {{
     ypos 100
 }}
 
+{burn_in_file}
+
 Reformat {{
     format "1920 1080"
     black_outside true

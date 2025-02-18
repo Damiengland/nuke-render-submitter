@@ -1,0 +1,403 @@
+set cut_paste_input [stack 0]
+version 15.0 v5
+BackdropNode {
+ inputs 0
+ name BackdropNode1
+ tile_color 0x35467aff
+ label "<center>Burn-in entry"
+ note_font_size 42
+ selected true
+ xpos -1304
+ ypos -210
+ bdwidth 449
+ bdheight 195
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode2
+ tile_color 0x3e5b3aff
+ label "<center>Work Area"
+ note_font_size 42
+ selected true
+ xpos -1305
+ ypos 18
+ bdwidth 449
+ bdheight 678
+}
+BackdropNode {
+ inputs 0
+ name BackdropNode3
+ tile_color 0x35467aff
+ label "<center>Burn-in exit"
+ note_font_size 42
+ selected true
+ xpos -1304
+ ypos 720
+ bdwidth 449
+ bdheight 195
+}
+StickyNote {
+ inputs 0
+ name StickyNote1
+ label "<---- DO NOT DELETE"
+ note_font "Verdana Bold"
+ selected true
+ xpos -1037
+ ypos -100
+}
+StickyNote {
+ inputs 0
+ name StickyNote2
+ label "<---- DO NOT DELETE"
+ note_font "Verdana Bold"
+ selected true
+ xpos -1037
+ ypos 830
+}
+push $cut_paste_input
+NoOp {
+ name burn_start
+ note_font Verdana
+ selected true
+ xpos -1129
+ ypos -98
+}
+NoOp {
+ name font_controller
+ tile_color 0xff5f00ff
+ note_font "Verdana Bold"
+ selected true
+ xpos -1129
+ ypos -74
+ hide_input true
+ addUserKnob {20 User}
+ addUserKnob {3 padding l Padding}
+ padding 2
+ addUserKnob {7 font_opacity l Opacity}
+ font_opacity 0.5
+ addUserKnob {7 font_size l Size}
+ font_size 0.39
+}
+Dot {
+ name Dot1
+ selected true
+ xpos -1095
+ ypos -20
+}
+Group {
+ name dCrop1
+ help "@b; dCrop v2@n; for Nuke 6.0v3\n\nProvides options to crop a input by box, percentage, bbox or a aspect ratio relative to the input.\n\nCreated by Diogo Girondi\ndiogogirondi@gmail.com"
+ knobChanged "n = nuke.thisNode()\nk = nuke.thisKnob()\n\nif k.name() in ('mode', 'showPanel'):\n    mode = n\['mode'].value()\n    if mode == 'Box':\n        n\['cbox'].setVisible(True)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'BBox':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(True)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'Percentage':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(True)\n        n\['right'].setVisible(True)\n        n\['bottom'].setVisible(True)\n        n\['top'].setVisible(True)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'Aspect Ratio':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(True)\n        if n\['ar_selection'].value() == 'Custom':\n            n\['ar_custom'].setVisible(True)\n        else:\n            n\['ar_custom'].setVisible(False)\n        if n\['ar_selection'].value() == 'Input       ':\n            n\['offset'].setEnabled(False)\n        else:\n            n\['offset'].setEnabled(True)\n        n\['offset'].setVisible(True)\n\nif k.name() in ('ar_selection', 'showPanel'):\n    aspect = n\['ar_selection'].value()\n    if aspect == 'Custom':\n        n\['ar_custom'].setVisible(True)\n    else:\n        n\['ar_custom'].setVisible(False)\n    if aspect == 'Input       ':\n        n\['offset'].setEnabled(False)\n    else:\n        n\['offset'].setEnabled(True)\n\nif k.name() == 'reformat':\n    reformat = n\['reformat'].value()\n    if reformat == True:\n        n\['crop'].setValue(False)\n    else:\n        n\['crop'].setValue(True)"
+ tile_color 0xa57aaaff
+ selected true
+ xpos -1129
+ ypos 134
+ addUserKnob {20 dcrop l "dCrop v2"}
+ addUserKnob {4 mode l Mode M {Box BBox Percentage "Aspect Ratio" ""}}
+ mode "Aspect Ratio"
+ addUserKnob {26 ""}
+ addUserKnob {15 cbox l Box +HIDDEN}
+ cbox {0 0 2048 1152}
+ addUserKnob {26 cbbox l "" +STARTLINE +HIDDEN T "Crop area based on the input BBox."}
+ addUserKnob {7 left l L +HIDDEN R 0 100}
+ addUserKnob {7 right l R +HIDDEN R 0 100}
+ addUserKnob {7 bottom l B +HIDDEN R 0 100}
+ addUserKnob {7 top l T +HIDDEN R 0 100}
+ addUserKnob {4 ar_selection l Aspect M {"Input       " 1.00 1.19 1.25 1.33 1.35 1.37 1.43 1.50 1.56 1.60 1.66 1.75 1.778 1.85 2.00 2.20 2.35 2.40 2.55 2.59 2.76 4.00 Custom ""}}
+ ar_selection Custom
+ addUserKnob {7 ar_custom l " " -STARTLINE R 0 4}
+ ar_custom 2.66
+ addUserKnob {7 offset l Offset R -100 100}
+ addUserKnob {26 ""}
+ addUserKnob {14 softness l Softness R 0 100}
+ addUserKnob {1 output l INVISIBLE +INVISIBLE}
+ output "\[value this.mode]"
+ addUserKnob {6 reformat +STARTLINE}
+ addUserKnob {6 intersect -STARTLINE}
+ addUserKnob {6 crop l "black outside" -STARTLINE}
+ crop true
+}
+ Input {
+  inputs 0
+  name Input
+  xpos 81
+  ypos 139
+ }
+set Nc7575400 [stack 0]
+ NoOp {
+  name Aspect
+  tile_color 0xff005fff
+  gl_color 0xff005fff
+  label Math
+  xpos 240
+  ypos 198
+  addUserKnob {20 ar_math l "Aspect Ratio Math"}
+  addUserKnob {7 input_ar R 0 4}
+  input_ar {{(input.width*input.pixel_aspect)/input.height}}
+  addUserKnob {7 custom_ar R 0 4}
+  custom_ar {{"parent.ar_selection==0?this.input_ar:parent.ar_selection==23?parent.ar_custom:\[value ar_selection]"}}
+  addUserKnob {6 ar_isBigger +STARTLINE}
+  ar_isBigger {{this.input_ar>=this.custom_ar}}
+  addUserKnob {26 ""}
+  addUserKnob {12 ar_area}
+  ar_area {{ar_isBigger?((input.height*this.custom_ar)/input.pixel_aspect):input.width} {ar_isBigger?input.height:((input.width*input.pixel_aspect)/this.custom_ar)}}
+  addUserKnob {12 ar_pos}
+  ar_pos {{((input.width-this.ar_area.x)/2)*(parent.offset/100)} {((input.height-this.ar_area.y)/2)*(parent.offset/100)}}
+  addUserKnob {15 ar}
+  ar {{ar_isBigger?this.ar_pos.x+((input.width/2)-(((input.height*this.custom_ar)/input.pixel_aspect)/2)):0} {ar_isBigger?0:this.ar_pos.y+((input.height/2)-(((input.width*input.pixel_aspect)/this.custom_ar)/2))} {ar_isBigger?this.ar_pos.x+((input.width/2)+(((input.height*this.custom_ar)/input.pixel_aspect)/2)):input.width} {ar_isBigger?input.height:this.ar_pos.y+((input.height/2)+(((input.width*input.pixel_aspect)/this.custom_ar)/2))}}
+ }
+ Crop {
+  box {{parent.Aspect.ar.main} {parent.Aspect.ar.main} {parent.Aspect.ar.main} {parent.Aspect.ar.main}}
+  softness {{parent.softness.w} {parent.softness.h}}
+  reformat {{parent.reformat}}
+  intersect {{parent.intersect}}
+  crop {{parent.crop}}
+  name AspectRatio
+  label Crop
+  xpos 240
+  ypos 244
+ }
+push $Nc7575400
+ Crop {
+  box {{"width * ( parent.left / 100 )" i} {"height * ( parent.bottom / 100 )" i} {"width - ( width * ( parent.right / 100 ) )" i} {"height - ( height * ( parent.top / 100 ) )" i}}
+  softness {{parent.softness.w i} {parent.softness.h i}}
+  reformat {{parent.reformat i}}
+  intersect {{parent.intersect i}}
+  crop {{parent.crop i}}
+  name Percentage
+  label Crop
+  xpos 125
+  ypos 246
+ }
+push $Nc7575400
+ Crop {
+  box {{input.bbox.x i} {input.bbox.y i} {input.bbox.r i} {input.bbox.t i}}
+  softness {{parent.softness.w i} {parent.softness.h i}}
+  reformat {{parent.reformat i}}
+  intersect {{parent.intersect i}}
+  crop {{parent.crop i}}
+  name BBox
+  label Crop
+  xpos 15
+  ypos 246
+ }
+push $Nc7575400
+ Crop {
+  box {{parent.cbox.x i} {parent.cbox.y i} {parent.cbox.r i} {parent.cbox.t i}}
+  softness {{parent.softness.w i} {parent.softness.h i}}
+  reformat {{parent.reformat i}}
+  intersect {{parent.intersect i}}
+  crop {{parent.crop i}}
+  name Box
+  label Crop
+  xpos -95
+  ypos 246
+ }
+ Switch {
+  inputs 4
+  which {{parent.mode i}}
+  name Mode
+  xpos 80
+  ypos 349
+ }
+ Output {
+  name Output1
+  xpos 80
+  ypos 425
+ }
+end_group
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message "Mellow Pictures"
+ old_message {{77 101 108 108 111 119 32 80 105 99 116 117 114 101 115}
+   }
+ box {{(font_controller.padding/100)*width} {"height - (dCrop1.bbox.y/2) >= height ? (height - 100) : height - (dCrop1.bbox.y/2)"} {box.x} {box.y}}
+ yjustify center
+ transforms {{0 2}
+   }
+ cursor_position 15
+ font {{ Calibri : Light : calibril.ttf : 0 }}
+ global_font_scale {{parent.font_controller.font_size}}
+ center {1920 1080}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 2160}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1920 1080 0 0 1 1 0 0 0 0}
+   }
+ color {{parent.font_controller.font_opacity}}
+ name top_left_text
+ selected true
+ xpos -1129
+ ypos 213
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message "\[date %d]-\[date %m]-\[date %Y]"
+ old_message {{49 55 45 48 50 45 50 48 50 53}
+   }
+ old_expression_markers {{0 1 3 4 6 9}
+   }
+ box {{"width - ((font_controller.padding/100)*width)"} {"height - (dCrop1.bbox.y/2) >= height ? (height - 100) : height - (dCrop1.bbox.y/2)"} {box.x} {box.y}}
+ xjustify right
+ yjustify center
+ transforms {{0 2}
+   }
+ cursor_position 29
+ font {{ Calibri : Light : calibril.ttf : 0 }}
+ global_font_scale {{parent.font_controller.font_size}}
+ center {1920 1080}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 2160}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1920 1080 0 0 1 1 0 0 0 0}
+   }
+ color {{parent.font_controller.font_opacity}}
+ name top_right_text
+ selected true
+ xpos -1129
+ ypos 237
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message DEV
+ old_message {{68 69 86}
+   }
+ box {{(font_controller.padding/100)*width} {"dCrop1.bbox.y/2 >= 0 ? dCrop1.bbox.y/2 : 100"} {box.x} {box.y}}
+ yjustify center
+ transforms {{0 2}
+   }
+ cursor_position 3
+ font {{ Calibri : Light : calibril.ttf : 0 }}
+ global_font_scale {{parent.font_controller.font_size}}
+ center {1920 1080}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 2160}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1920 1080 0 0 1 1 0 0 0 0}
+   }
+ color {{parent.font_controller.font_opacity}}
+ name bottom_left_text
+ selected true
+ xpos -1129
+ ypos 341
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message "(\[value root.first_frame]-\[value root.last_frame]) \[frame]"
+ old_message {{40 49 45 49 48 48 41 32 50 55}
+   }
+ old_expression_markers {{1 1 3 5 8 9}
+   }
+ box {{"width - ((font_controller.padding/100)*width)"} {"dCrop1.bbox.y/2 >= 0 ? dCrop1.bbox.y/2 : 100"} {box.x} {box.y}}
+ xjustify right
+ yjustify center
+ transforms {{0 2}
+   }
+ cursor_position 58
+ font {{ Calibri : Light : calibril.ttf : 0 }}
+ global_font_scale {{parent.font_controller.font_size}}
+ center {1920 1080}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 2160}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1920 1080 0 0 1 1 0 0 0 0}
+   }
+ color {{parent.font_controller.font_opacity}}
+ name bottom_right_text
+ selected true
+ xpos -1129
+ ypos 365
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ message "\[join \[lrange \[split \[file tail \[value \[topnode].file]] _ ] 0 2 ] \"_\"]_v\[ lindex \[split \[ lindex \[split \[lindex \[split \[file tail \[value \[topnode].file]] .] 0] _] 4] v] 1]"
+ old_message {{91 106 111 105 110 32 91 108 114 97 110 103 101 32 91 115 112 108 105 116 32 91 102 105 108 101 32 116 97 105 108 32 91 118 97 108 117 101 32 110 111 100 101 50 49 57 99 55 53 55 52 56 48 48 46 102 105 108 101 93 93 32 95 32 93 32 48 32 50 32 93 32 34 95 34 93 95 118 91 32 108 105 110 100 101 120 32 91 115 112 108 105 116 32 91 32 108 105 110 100 101 120 32 91 115 112 108 105 116 32 91 108 105 110 100 101 120 32 91 115 112 108 105 116 32 91 102 105 108 101 32 116 97 105 108 32 91 118 97 108 117 101 32 110 111 100 101 50 49 57 99 55 53 55 52 56 48 48 46 102 105 108 101 93 93 32 46 93 32 48 93 32 95 93 32 52 93 32 118 93 32 49 93}
+   }
+ old_expression_markers {{39 53 143 157}
+   }
+ box {{width/2} {"height - (dCrop1.bbox.y/2) >= height ? (height - 100) : height - (dCrop1.bbox.y/2)"} {box.x} {box.y}}
+ xjustify center
+ yjustify center
+ transforms {{0 2}
+   }
+ cursor_position 72
+ font {{ Calibri : Light : calibril.ttf : 0 }}
+ global_font_scale {{parent.font_controller.font_size}}
+ center {1920 1080}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 2160}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1920 1080 0 0 1 1 0 0 0 0}
+   }
+ color {{parent.font_controller.font_opacity}}
+ name middle_top_text
+ selected true
+ xpos -1129
+ ypos 454
+}
+Text2 {
+ font_size_toolbar 100
+ font_width_toolbar 100
+ font_height_toolbar 100
+ box {{width/2} {"dCrop1.bbox.y/2 >= 0 ? dCrop1.bbox.y/2 : 100"} {box.x} {box.y}}
+ xjustify center
+ yjustify center
+ transforms {{0 2}
+   }
+ font {{ Calibri : Light : calibril.ttf : 0 }}
+ global_font_scale {{parent.font_controller.font_size}}
+ center {1920 1080}
+ cursor_initialised true
+ autofit_bbox false
+ initial_cursor_position {{0 2160}
+   }
+ group_animations {{0} imported: 0 selected: items: "root transform/"}
+ animation_layers {{1 11 1920 1080 0 0 1 1 0 0 0 0}
+   }
+ color {{parent.font_controller.font_opacity}}
+ name middle_bot_text
+ selected true
+ xpos -1129
+ ypos 478
+}
+Reformat {
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ black_outside true
+ name Reformat1
+ selected true
+ xpos -1129
+ ypos 644
+}
+Dot {
+ name Dot2
+ selected true
+ xpos -1095
+ ypos 722
+}
+NoOp {
+ name burn_exit
+ note_font Verdana
+ selected true
+ xpos -1129
+ ypos 830
+}
