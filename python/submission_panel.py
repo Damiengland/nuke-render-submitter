@@ -328,7 +328,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
         with open(job_info_path, "w") as job_file:
             job_file.writelines([
                 "Plugin=Nuke\n",
-                f"Name={os.path.basename(script_path)} - {node.name()} - {render_type}\n",
+                f"Name={node.name()} - {render_type}\n",
                 f"BatchName={os.path.basename(script_path)}\n",
                 f"Frames={self.frame_range.value()}\n",
                 f"ChunkSize={self.chunk_size.value() if output_type != 'mov' else 1000000}\n",
