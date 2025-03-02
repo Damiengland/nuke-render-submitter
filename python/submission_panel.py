@@ -198,8 +198,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
         submission_files = [self._build_submission_files("exr", node)]
 
         if self.render_review.value():
-            script_path = self._build_temp_nuke_script(node)
-            submission_files.append(self._build_submission_files("mov", node, script_path=script_path))
+            script_path, output_file = self._build_temp_nuke_script(node)
+            submission_files.append(self._build_submission_files("mov", node, script_path=script_path, output_file=output_file))
 
         return submission_files
 
@@ -213,7 +213,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
     # Build Methods
     # ----------------------------------------
 
-    def _build_submission_files(self, output_type: str, node, script_path=None):
+    def _build_submission_files(self, output_type: str, node, script_path=None, output_file=None):
         """
         Generates job info and plugin info files for Deadline submission.
 
@@ -241,7 +241,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
         plugin_info_path = os.path.join(temp_dir, f"{output_type}_nuke_deadline_plugin_{unique_id}.txt")
 
         # Create job info file with submission details
-        self._write_job_info(job_info_path, output_type, node)
+        self._write_job_info(job_info_path, output_type, node, output_file=output_file)
 
         # Create plugin info file with Nuke version and scene file
         self._write_plugin_info(plugin_info_path, script_path)
@@ -309,7 +309,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
         with open(new_script_path, "w") as script_file:
             script_file.write(nuke_script_content)
 
-        return new_script_path
+        return new_script_path, output_file_path
 
     @staticmethod
     def _build_submission_command(command, submission_files):
@@ -321,23 +321,33 @@ class SubmitterPanel(nukescripts.PythonPanel):
     # Write Methods
     # ----------------------------------------
 
-    def _write_job_info(self, job_info_path, output_type, node):
+    def _write_job_info(self, job_info_path, output_type, node, output_file=None):
         """Writes the job info file for Deadline submission."""
         script_path = self._get_nuke_script_path()
         render_type = "Review" if output_type == "mov" else "Rendered Image"
+
+        job_file_lines = [
+                    "Plugin=Nuke\n",
+                    f"Name={node.name()} - {render_type}\n",
+                    f"BatchName={os.path.basename(script_path)}\n",
+                    f"Frames={self.frame_range.value()}\n",
+                    f"ChunkSize={self.chunk_size.value() if output_type != 'mov' else 1000000}\n",
+                    f"Priority={self.priority.value()}\n",
+                    "Pool=none\n",
+                    f"Department={self.department.value()}\n",
+                    f"Comment={self.comment.value()}\n",
+                    f"EnvironmentKeyValue0=OCIO={self._get_ocio_path()}\n",
+                    f"OutputDirectory0={os.path.dirname(node['file'].value())}\n",
+                ]
+
+        if output_type == "exr":
+            output_dir = os.path.dirname(node['file'].value())
+            job_file_lines.append(f"OutputDirectory0={output_dir}\n")
+        if output_type == "mov":
+            job_file_lines.append(f"OutputDirectory1={os.path.dirname(output_file)}\n")
+
         with open(job_info_path, "w") as job_file:
-            job_file.writelines([
-                "Plugin=Nuke\n",
-                f"Name={node.name()} - {render_type}\n",
-                f"BatchName={os.path.basename(script_path)}\n",
-                f"Frames={self.frame_range.value()}\n",
-                f"ChunkSize={self.chunk_size.value() if output_type != 'mov' else 1000000}\n",
-                f"Priority={self.priority.value()}\n",
-                "Pool=none\n",
-                f"Department={self.department.value()}\n",
-                f"Comment={self.comment.value()}\n",
-                f"EnvironmentKeyValue0=OCIO={self._get_ocio_path()}\n",
-            ])
+            job_file.writelines(job_file_lines)
 
     @staticmethod
     def _write_plugin_info(plugin_info_path, script_path):
@@ -368,8 +378,16 @@ class SubmitterPanel(nukescripts.PythonPanel):
             # Get OCIO path
             ocio_path = self._get_ocio_path()
 
+            # Get project name
+            ctx, tk = self._get_shotgrid_context()
+            project = ctx.project.get("name")
+            if project:
+                file = f"burn_{project}.nk"
+            else:
+                file = "burn.nk"
+
             # Define paths
-            burn_path = os.path.join(resources_dir, "burn.nk")
+            burn_path = os.path.join(resources_dir, file)
             template_path = os.path.join(resources_dir, "nuke_template.txt")
 
             if self.add_burn.value():

@@ -7,8 +7,8 @@ BackdropNode {
  label "<center>Burn-in entry"
  note_font_size 42
  selected true
- xpos -1304
- ypos -210
+ xpos 508
+ ypos -213
  bdwidth 449
  bdheight 195
 }
@@ -19,8 +19,8 @@ BackdropNode {
  label "<center>Work Area"
  note_font_size 42
  selected true
- xpos -1305
- ypos 18
+ xpos 507
+ ypos 15
  bdwidth 449
  bdheight 678
 }
@@ -31,8 +31,8 @@ BackdropNode {
  label "<center>Burn-in exit"
  note_font_size 42
  selected true
- xpos -1304
- ypos 720
+ xpos 508
+ ypos 717
  bdwidth 449
  bdheight 195
 }
@@ -42,8 +42,8 @@ StickyNote {
  label "<---- DO NOT DELETE"
  note_font "Verdana Bold"
  selected true
- xpos -1037
- ypos -100
+ xpos 775
+ ypos -103
 }
 StickyNote {
  inputs 0
@@ -51,24 +51,24 @@ StickyNote {
  label "<---- DO NOT DELETE"
  note_font "Verdana Bold"
  selected true
- xpos -1037
- ypos 830
+ xpos 775
+ ypos 827
 }
 push $cut_paste_input
 NoOp {
  name burn_start
  note_font Verdana
  selected true
- xpos -1129
- ypos -98
+ xpos 683
+ ypos -101
 }
 NoOp {
  name font_controller
  tile_color 0xff5f00ff
  note_font "Verdana Bold"
  selected true
- xpos -1129
- ypos -74
+ xpos 683
+ ypos -77
  hide_input true
  addUserKnob {20 User}
  addUserKnob {3 padding l Padding}
@@ -76,13 +76,21 @@ NoOp {
  addUserKnob {7 font_opacity l Opacity}
  font_opacity 0.5
  addUserKnob {7 font_size l Size}
- font_size 0.39
+ font_size 0.3
 }
 Dot {
  name Dot1
  selected true
- xpos -1095
- ypos -20
+ xpos 717
+ ypos -23
+}
+Reformat {
+ format "1920 1080 0 0 1920 1080 1 HD_1080"
+ black_outside true
+ name Reformat2
+ selected true
+ xpos 683
+ ypos 89
 }
 Group {
  name dCrop1
@@ -90,8 +98,8 @@ Group {
  knobChanged "n = nuke.thisNode()\nk = nuke.thisKnob()\n\nif k.name() in ('mode', 'showPanel'):\n    mode = n\['mode'].value()\n    if mode == 'Box':\n        n\['cbox'].setVisible(True)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'BBox':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(True)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'Percentage':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(True)\n        n\['right'].setVisible(True)\n        n\['bottom'].setVisible(True)\n        n\['top'].setVisible(True)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(False)\n        n\['ar_custom'].setVisible(False)\n        n\['offset'].setVisible(False)\n    elif mode == 'Aspect Ratio':\n        n\['cbox'].setVisible(False)\n        n\['left'].setVisible(False)\n        n\['right'].setVisible(False)\n        n\['bottom'].setVisible(False)\n        n\['top'].setVisible(False)\n        n\['cbbox'].setVisible(False)\n        n\['ar_selection'].setVisible(True)\n        if n\['ar_selection'].value() == 'Custom':\n            n\['ar_custom'].setVisible(True)\n        else:\n            n\['ar_custom'].setVisible(False)\n        if n\['ar_selection'].value() == 'Input       ':\n            n\['offset'].setEnabled(False)\n        else:\n            n\['offset'].setEnabled(True)\n        n\['offset'].setVisible(True)\n\nif k.name() in ('ar_selection', 'showPanel'):\n    aspect = n\['ar_selection'].value()\n    if aspect == 'Custom':\n        n\['ar_custom'].setVisible(True)\n    else:\n        n\['ar_custom'].setVisible(False)\n    if aspect == 'Input       ':\n        n\['offset'].setEnabled(False)\n    else:\n        n\['offset'].setEnabled(True)\n\nif k.name() == 'reformat':\n    reformat = n\['reformat'].value()\n    if reformat == True:\n        n\['crop'].setValue(False)\n    else:\n        n\['crop'].setValue(True)"
  tile_color 0xa57aaaff
  selected true
- xpos -1129
- ypos 134
+ xpos 683
+ ypos 125
  addUserKnob {20 dcrop l "dCrop v2"}
  addUserKnob {4 mode l Mode M {Box BBox Percentage "Aspect Ratio" ""}}
  mode "Aspect Ratio"
@@ -123,7 +131,7 @@ Group {
   xpos 81
   ypos 139
  }
-set Nc7575400 [stack 0]
+set Nda1aa000 [stack 0]
  NoOp {
   name Aspect
   tile_color 0xff005fff
@@ -157,7 +165,7 @@ set Nc7575400 [stack 0]
   xpos 240
   ypos 244
  }
-push $Nc7575400
+push $Nda1aa000
  Crop {
   box {{"width * ( parent.left / 100 )" i} {"height * ( parent.bottom / 100 )" i} {"width - ( width * ( parent.right / 100 ) )" i} {"height - ( height * ( parent.top / 100 ) )" i}}
   softness {{parent.softness.w i} {parent.softness.h i}}
@@ -169,7 +177,7 @@ push $Nc7575400
   xpos 125
   ypos 246
  }
-push $Nc7575400
+push $Nda1aa000
  Crop {
   box {{input.bbox.x i} {input.bbox.y i} {input.bbox.r i} {input.bbox.t i}}
   softness {{parent.softness.w i} {parent.softness.h i}}
@@ -181,7 +189,7 @@ push $Nc7575400
   xpos 15
   ypos 246
  }
-push $Nc7575400
+push $Nda1aa000
  Crop {
   box {{parent.cbox.x i} {parent.cbox.y i} {parent.cbox.r i} {parent.cbox.t i}}
   softness {{parent.softness.w i} {parent.softness.h i}}
@@ -231,15 +239,15 @@ Text2 {
  color {{parent.font_controller.font_opacity}}
  name top_left_text
  selected true
- xpos -1129
- ypos 213
+ xpos 683
+ ypos 210
 }
 Text2 {
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
  message "\[date %d]-\[date %m]-\[date %Y]"
- old_message {{49 55 45 48 50 45 50 48 50 53}
+ old_message {{48 50 45 48 51 45 50 48 50 53}
    }
  old_expression_markers {{0 1 3 4 6 9}
    }
@@ -262,8 +270,8 @@ Text2 {
  color {{parent.font_controller.font_opacity}}
  name top_right_text
  selected true
- xpos -1129
- ypos 237
+ xpos 683
+ ypos 234
 }
 Text2 {
  font_size_toolbar 100
@@ -290,17 +298,17 @@ Text2 {
  color {{parent.font_controller.font_opacity}}
  name bottom_left_text
  selected true
- xpos -1129
- ypos 341
+ xpos 683
+ ypos 338
 }
 Text2 {
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
  message "(\[value root.first_frame]-\[value root.last_frame]) \[frame]"
- old_message {{40 49 45 49 48 48 41 32 50 55}
+ old_message {{40 49 48 49 55 45 49 49 51 51 41 32 49 48 49 55}
    }
- old_expression_markers {{1 1 3 5 8 9}
+ old_expression_markers {{1 4 6 9 12 15}
    }
  box {{"width - ((font_controller.padding/100)*width)"} {"dCrop1.bbox.y/2 >= 0 ? dCrop1.bbox.y/2 : 100"} {box.x} {box.y}}
  xjustify right
@@ -321,24 +329,24 @@ Text2 {
  color {{parent.font_controller.font_opacity}}
  name bottom_right_text
  selected true
- xpos -1129
- ypos 365
+ xpos 683
+ ypos 362
 }
 Text2 {
  font_size_toolbar 100
  font_width_toolbar 100
  font_height_toolbar 100
- message "\[join \[lrange \[split \[file tail \[value \[topnode].file]] _ ] 0 2 ] \"_\"]_v\[ lindex \[split \[ lindex \[split \[lindex \[split \[file tail \[value \[topnode].file]] .] 0] _] 4] v] 1]"
- old_message {{91 106 111 105 110 32 91 108 114 97 110 103 101 32 91 115 112 108 105 116 32 91 102 105 108 101 32 116 97 105 108 32 91 118 97 108 117 101 32 110 111 100 101 50 49 57 99 55 53 55 52 56 48 48 46 102 105 108 101 93 93 32 95 32 93 32 48 32 50 32 93 32 34 95 34 93 95 118 91 32 108 105 110 100 101 120 32 91 115 112 108 105 116 32 91 32 108 105 110 100 101 120 32 91 115 112 108 105 116 32 91 108 105 110 100 101 120 32 91 115 112 108 105 116 32 91 102 105 108 101 32 116 97 105 108 32 91 118 97 108 117 101 32 110 111 100 101 50 49 57 99 55 53 55 52 56 48 48 46 102 105 108 101 93 93 32 46 93 32 48 93 32 95 93 32 52 93 32 118 93 32 49 93}
+ message "\[join \[lrange \[split \[file tail \[value \[topnode].file]] _ ] 0 2 ] \"_\"]_v\[ lindex \[split \[ lindex \[split \[lindex \[split \[file tail \[value \[topnode].file]] .] 0] _] 5] v] 1]"
+ old_message {{57 57 57 95 120 120 120 95 57 57 57 57 95 118 48 48 48 51}
    }
- old_expression_markers {{39 53 143 157}
+ old_expression_markers {{0 11 14 17}
    }
  box {{width/2} {"height - (dCrop1.bbox.y/2) >= height ? (height - 100) : height - (dCrop1.bbox.y/2)"} {box.x} {box.y}}
  xjustify center
  yjustify center
  transforms {{0 2}
    }
- cursor_position 72
+ cursor_position 170
  font {{ Calibri : Light : calibril.ttf : 0 }}
  global_font_scale {{parent.font_controller.font_size}}
  center {1920 1080}
@@ -352,8 +360,8 @@ Text2 {
  color {{parent.font_controller.font_opacity}}
  name middle_top_text
  selected true
- xpos -1129
- ypos 454
+ xpos 683
+ ypos 451
 }
 Text2 {
  font_size_toolbar 100
@@ -377,27 +385,27 @@ Text2 {
  color {{parent.font_controller.font_opacity}}
  name middle_bot_text
  selected true
- xpos -1129
- ypos 478
+ xpos 683
+ ypos 475
 }
 Reformat {
  format "1920 1080 0 0 1920 1080 1 HD_1080"
  black_outside true
  name Reformat1
  selected true
- xpos -1129
- ypos 644
+ xpos 683
+ ypos 641
 }
 Dot {
  name Dot2
  selected true
- xpos -1095
- ypos 722
+ xpos 717
+ ypos 719
 }
 NoOp {
  name burn_exit
  note_font Verdana
  selected true
- xpos -1129
- ypos 830
+ xpos 683
+ ypos 827
 }
