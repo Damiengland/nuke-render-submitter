@@ -48,11 +48,12 @@ class SubmitterPanel(nukescripts.PythonPanel):
         self.chunk_size.setValue(10)
         self.priority.setValue(33)
         self.render_review.setValue(True)
+        self.add_burn.setValue(1)
+        self.add_slate.setValue(1)
 
     def _configure_knobs(self):
         """Configure knob properties."""
         self.render_review.setFlag(nuke.STARTLINE)
-        self.add_slate.setFlag(nuke.DISABLED)
 
     def _add_knobs(self):
         """Add knobs to the panel."""
@@ -208,6 +209,24 @@ class SubmitterPanel(nukescripts.PythonPanel):
         """Returns the absolute path to the 'resources' directory."""
         return os.path.join(pathlib.Path(__file__).resolve().parent.parent, "resources")
 
+    def get_adjusted_frame_range(self):
+        """
+        Retrieves and adjusts the frame range based on user settings.
+
+        If `add_slate` is enabled, the first frame is decremented by 1
+        to account for the slate frame.
+
+        Returns:
+            str: Adjusted frame range in the format "start-end".
+        """
+        frame_range_str = self.frame_range.value()
+        start_frame, end_frame = map(int, frame_range_str.split("-"))
+
+        if self.add_slate:
+            start_frame -= 1  # Adjust for slate
+
+        return f"{start_frame}-{end_frame}"
+
 
     # ----------------------------------------
     # Build Methods
@@ -330,7 +349,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
                     "Plugin=Nuke\n",
                     f"Name={node.name()} - {render_type}\n",
                     f"BatchName={os.path.basename(script_path)}\n",
-                    f"Frames={self.frame_range.value()}\n",
+                    f"Frames={self.get_adjusted_frame_range()}\n",
                     f"ChunkSize={self.chunk_size.value() if output_type != 'mov' else 1000000}\n",
                     f"Priority={self.priority.value()}\n",
                     "Pool=none\n",
@@ -372,8 +391,10 @@ class SubmitterPanel(nukescripts.PythonPanel):
         """
         try:
             # Extract frame range
-            frame_range = self.frame_range.value()
-            first, last = frame_range.split("-")
+            root_fr = self.frame_range.value()
+            root_first, root_last = root_fr.split("-")
+            read_fr = self.get_adjusted_frame_range()
+            read_first, read_last =map(int, read_fr.split("-"))
 
             # Get OCIO path
             ocio_path = self._get_ocio_path()
@@ -414,8 +435,10 @@ class SubmitterPanel(nukescripts.PythonPanel):
 
             # Populate template with values
             nuke_script_content = nuke_script_template.format(
-                first=first,
-                last=last,
+                root_first=root_first,
+                root_last=root_last,
+                read_first=read_first,
+                read_last=read_last,
                 OCIO_PATH=ocio_path,
                 read_file_path=read_file_path,
                 output_file_path=output_file_path,

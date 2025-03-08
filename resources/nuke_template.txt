@@ -2,16 +2,16 @@
 version 15.0 v5
 
 Root {{
-    first_frame {first}
-    last_frame {last}
+    first_frame {root_first}
+    last_frame {root_last}
     colorManagement "OCIO"
     OCIO_config "{OCIO_PATH}"
 }}
 
 Read {{
     file "{read_file_path}"
-    first {first}
-    last {last}
+    first {read_first}
+    last {read_last}
     name read
     xpos 100
     ypos 100
