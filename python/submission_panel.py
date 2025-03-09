@@ -43,6 +43,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
         self.add_burn = nuke.Boolean_Knob('add_burn', 'Add burn-in')
         self.spacer = nuke.Text_Knob('spacer', ' ', ' ')
 
+        # TODO: disable slate and burn in option when movout is disabled
+
     def _set_default_values(self):
         """Set default knob values."""
         self.chunk_size.setValue(10)
@@ -184,9 +186,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
 
         write_nodes = [node for node in nodes if node.Class() in ["Write", "WriteTank"]]
 
-        converted_nodes = self._convert_write_nodes(write_nodes, "to")
-
-        return converted_nodes
+        return write_nodes
 
 
     def _get_submission_files(self, node):
@@ -454,6 +454,21 @@ class SubmitterPanel(nukescripts.PythonPanel):
     # ----------------------------------------
     # Utility Methods
     # ----------------------------------------
+    @staticmethod
+    def _check_write_has_files(write_node):
+        """Checks if the output directory of a Nuke Write node exists and prompts the user to proceed."""
+        try:
+            file_path = write_node['cached_path'].value()
+        except NameError:
+            file_path = write_node['file'].value()
+
+        output_dir = os.path.dirname(file_path)
+
+        if not os.path.exists(output_dir):
+            return True  # Directory does not exist
+
+        if any(os.path.isfile(os.path.join(output_dir, f)) for f in os.listdir(output_dir)):
+            return nuke.ask(f"Files found in directory:\n{output_dir}\nDo you want to proceed?")
 
     @staticmethod
     def _convert_write_nodes(nodes, direction):
@@ -553,7 +568,6 @@ class SubmitterPanel(nukescripts.PythonPanel):
     # ----------------------------------------
     # Exposed Methods
     # ----------------------------------------
-
     @staticmethod
     def show(send_selected: bool):
         """Displays the submission panel and executes the command based on user input."""
@@ -567,26 +581,29 @@ class SubmitterPanel(nukescripts.PythonPanel):
         # Get the write nodes based on user selection
         write_nodes = panel._get_write_nodes(send_selected)
 
-        # Convert the write nodes as needed (to "Write" nodes)
-        if write_nodes:
-            SubmitterPanel._deselect_and_disable_write_nodes(write_nodes)
-            SubmitterPanel._deselect_non_write_nodes()
-
-            # Process each write node individually
-            for write_node in write_nodes:
-                SubmitterPanel._select_and_enable_write_node(write_node)
-
-                # Gather submission files for the selected write node
-                submission_files = panel._get_submission_files(write_node)
-
-                # Execute the command to submit the job
-                panel._execute_command(submission_files)
-
-            # Convert sgtk back from Write
-            panel._convert_write_nodes(write_nodes, "from")
-        else:
-            # Notify the user that no valid Write nodes were found
+        if not write_nodes:
             nuke.message("No valid Write nodes selected. Please select at least one Write or WriteTank node.")
+            return
 
+        # Check if any write node should prevent proceeding
+        if not any(SubmitterPanel._check_write_has_files(node) for node in write_nodes):
+            return  # Exit early if a check fails
 
+        # Convert write nodes
+        write_nodes = panel._convert_write_nodes(write_nodes, "to")
 
+        # Process nodes for submission
+        SubmitterPanel._deselect_and_disable_write_nodes(write_nodes)
+        SubmitterPanel._deselect_non_write_nodes()
+
+        for write_node in write_nodes:
+            SubmitterPanel._select_and_enable_write_node(write_node)
+
+            # Gather submission files for the selected write node
+            submission_files = panel._get_submission_files(write_node)
+
+            # Execute the command to submit the job
+            panel._execute_command(submission_files)
+
+        # Convert sgtk back from Write
+        panel._convert_write_nodes(write_nodes, "from")
