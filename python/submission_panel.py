@@ -153,9 +153,12 @@ class SubmitterPanel(nukescripts.PythonPanel):
             render_fields.update({
                 key: current_fields.get(key) for key in ["Sequence", "Shot", "Step", "version"] if key in current_fields
             })
+            # TODO: get actual output of the write node & width / height
             render_fields.update({
                 "SEQ": "%04d",
                 "output": "output",
+                "width": 1920,
+                "height": 1080
             })
 
             # Apply fields to the template and normalize path
@@ -296,6 +299,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
 
         render_path = self._get_render_template(current_script_path)
 
+
         if not render_path:
             # Get the node's file path
             original_path = node["file"].value()
@@ -314,6 +318,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
 
         # Determine Write node output path (same dir as Read file)
         if render_path:
+            render_dir = os.path.dirname(render_path)
+            os.makedirs(render_dir, exist_ok=True)  # Ensure the folder exists
             output_file_path = render_path.replace("\\", "/")
         elif read_file_path:
             output_dir = os.path.dirname(read_file_path)
@@ -343,7 +349,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
     def _write_job_info(self, job_info_path, output_type, node, output_file=None):
         """Writes the job info file for Deadline submission."""
         script_path = self._get_nuke_script_path()
-        render_type = "Review" if output_type == "mov" else "Rendered Image"
+        render_type = "Movie" if output_type == "mov" else "Rendered Image"
 
         job_file_lines = [
                     "Plugin=Nuke\n",
