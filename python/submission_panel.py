@@ -82,6 +82,12 @@ class SubmitterPanel(nukescripts.PythonPanel):
         engine = sgtk.platform.current_engine()
         return engine.context, engine.sgtk
 
+    def _get_shot_name(self):
+        """Retrieve the shot name from the current ShotGrid context."""
+        ctx, _ = self._get_shotgrid_context()
+        entity = ctx.entity if ctx else None
+        return entity.get("name") if entity else None
+
     @staticmethod
     def _get_deadline_command():
         """
@@ -362,6 +368,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
                     f"Department={self.department.value()}\n",
                     f"Comment={self.comment.value()}\n",
                     f"EnvironmentKeyValue0=OCIO={self._get_ocio_path()}\n",
+                    f"EnvironmentKeyValue1=SHOT={self._get_shot_name()}\n",
                     f"OutputDirectory0={os.path.dirname(node['file'].value())}\n",
                 ]
 
