@@ -139,7 +139,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
         nuke.scriptSave()
         return script_path
 
-    def _get_render_template(self, script_path, template_name="nuke_shot_render_movie"):
+    def _get_render_template(self, script_path, node_data, template_name="nuke_shot_render_movie"):
         """Generates the render path dynamically based on the given template name."""
 
         ctx, tk = self._get_shotgrid_context()
@@ -159,10 +159,10 @@ class SubmitterPanel(nukescripts.PythonPanel):
             render_fields.update({
                 key: current_fields.get(key) for key in ["Sequence", "Shot", "Step", "version"] if key in current_fields
             })
-            # TODO: get actual output of the write node & width / height
+
             render_fields.update({
                 "SEQ": "%04d",
-                "output": "output",
+                "output": node_data["output"],
                 "width": 1920,
                 "height": 1080
             })
@@ -236,6 +236,17 @@ class SubmitterPanel(nukescripts.PythonPanel):
 
         return f"{start_frame}-{end_frame}"
 
+    @staticmethod
+    def _get_write_node_data(node):
+
+        data = dict()
+
+        if node.knob("tk_output"):
+            data["output"] = node.knob("tk_output").value()
+        else:
+            data["output"] = "output"
+
+        return data
 
     # ----------------------------------------
     # Build Methods
@@ -279,6 +290,8 @@ class SubmitterPanel(nukescripts.PythonPanel):
     def _build_temp_nuke_script(self, node):
         """Creates a new Nuke script in the same directory as the current script with a Read and Write node."""
 
+        node_data = self._get_write_node_data(node)
+
         read_file_path = node["file"].value()
 
         # Ensure the current script is saved
@@ -303,7 +316,7 @@ class SubmitterPanel(nukescripts.PythonPanel):
         # Escape backslashes for Windows paths (Nuke uses Unix-style paths)
         read_file_path = read_file_path.replace("\\", "/")
 
-        render_path = self._get_render_template(current_script_path)
+        render_path = self._get_render_template(current_script_path, node_data)
 
 
         if not render_path:
